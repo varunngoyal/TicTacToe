@@ -3,7 +3,9 @@ package com.example.tictactoe;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.media.AudioAttributes;
@@ -24,6 +26,12 @@ import static java.lang.Thread.sleep;
 
 public class GameActivity extends AppCompatActivity implements View.OnClickListener {
 
+
+    //Shared Preferences file
+    public static final String PREFS_NAME = "TicTacToeShared";
+
+    private Dialog howtoplay_dialog;
+
     private Button[][] buttons = new Button[3][3];
 
     LinearLayout gameGrid;
@@ -35,6 +43,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     private int player2Points = 0;
 
     private TextView textViewPoints;
+    private TextView textTurn;
 
     private SoundPool soundPool;
     private int sound_click, sound_win, sound_finished;
@@ -46,6 +55,19 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
+        //show how to play only once
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        boolean dialogShown = settings.getBoolean("dialogShown", false);
+
+        if (!dialogShown) {
+            // AlertDialog code here
+            HowtoPlayDialog();
+
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putBoolean("dialogShown", true);
+            editor.commit();
+        }
 
         //get sounds
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -109,6 +131,8 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
         }
 
+        textTurn = findViewById(R.id.txt_turn);
+
         Button buttonReset = findViewById(R.id.button_reset);
 
         buttonReset.setOnClickListener(new View.OnClickListener() {
@@ -128,9 +152,12 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
         if (player1Turn) {
             ((Button) v).setText("X");
+            textTurn.setText("O, it's your turn");
             v.setBackground(getResources().getDrawable(R.drawable.gridbtn_p1));
+
         } else {
             ((Button) v).setText("O");
+            textTurn.setText("X, it's your turn");
             v.setBackground(getResources().getDrawable(R.drawable.gridbtn_p2));
 
         }
@@ -348,5 +375,15 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         player2Points = 0;
         updatePointsText();
         resetBoard();
+    }
+
+    public void HowtoPlayDialog() {
+
+        howtoplay_dialog = new Dialog(GameActivity.this);
+
+        howtoplay_dialog.setContentView(R.layout.howtoplaydialog);
+
+        howtoplay_dialog.show();
+
     }
 }
