@@ -51,6 +51,8 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
     TextView Xwins, Owins, draw;
 
+    private boolean isSoundEnabled, isMusicEnabled;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +70,10 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             editor.putBoolean("dialogShown", true);
             editor.commit();
         }
+
+        //check if sound and music are enabled
+        isMusicEnabled = settings.getBoolean("music", true);
+        isSoundEnabled = settings.getBoolean("sound", true);
 
         //get sounds
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -96,15 +102,15 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    player.start();
+                    if(isMusicEnabled)
+                        player.start();
                 }
             });
         }
 
-        player.start();
-
-
-
+        if(isMusicEnabled) {
+            player.start();
+        }
 
         //get screen size
         Point point = new Point();
@@ -185,17 +191,19 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void playDrawSound() {
-        soundPool.play(sound_finished, 1, 1, 0, 0, 1);
+        if(isSoundEnabled)
+            soundPool.play(sound_finished, 1, 1, 0, 0, 1);
 
     }
 
     private void playWinSound() {
-        soundPool.play(sound_win, 1, 1, 0, 0, 1);
+        if(isSoundEnabled)
+            soundPool.play(sound_win, 1, 1, 0, 0, 1);
     }
 
     private void playClickSound() {
-
-        soundPool.play(sound_click, 1, 1, 0, 0, 1);
+        if(isSoundEnabled)
+            soundPool.play(sound_click, 1, 1, 0, 0, 1);
     }
 
     @Override
@@ -362,6 +370,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         }
         roundCount = 0;
         player1Turn = true;
+        textTurn.setText("X, it's your turn");
 
         for(int i=0;i<3;i++){
             for(int j=0;j<3;j++) {

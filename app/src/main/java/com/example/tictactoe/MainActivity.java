@@ -7,22 +7,28 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 
+import android.widget.Switch;
 import android.widget.Toast;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SettingsDialog.SettingsDialogListener {
+
+    public static final String PREFS_NAME = "TicTacToeShared";
 
     Dialog howtoplay_dialog;
     private long backPressedTime = 0;
     private Toast backToast;
+    //public boolean sound = false, music = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         findViewById(R.id.btn_play).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,6 +83,38 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        findViewById(R.id.btn_settings).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSettingsDialog();
+
+            }
+        });
+    }
+
+    public void openSettingsDialog() {
+        SettingsDialog settingsDialog = new SettingsDialog();
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        settingsDialog.setMusic(settings.getBoolean("music", false));
+        settingsDialog.setSound(settings.getBoolean("sound", false));
+        settingsDialog.show(getSupportFragmentManager(), "settings dialog");
+
+    }
+
+    @Override
+    public void applySettings(boolean sound, boolean music) {
+        Toast.makeText(this, "sound: "+sound+" music: "+music, Toast.LENGTH_SHORT).show();
+        //this.sound = sound;
+        //this.music = music;
+
+        //save the music and sound setttings
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("sound", sound);
+        editor.putBoolean("music", music);
+        editor.commit();
     }
 
     @Override
