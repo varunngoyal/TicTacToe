@@ -1,4 +1,4 @@
-package com.example.tictactoe;
+package com.vaavdevelopers.tictactoe;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,6 +22,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.graphics.Point;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 import static java.lang.Thread.sleep;
 
 public class GameActivity extends AppCompatActivity implements View.OnClickListener {
@@ -38,12 +41,14 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     private boolean player1Turn = true;
 
     private int roundCount;
+    ArrayList<Integer> nextTurnChoices = new ArrayList<>();
 
     private int player1Points = 0;
     private int player2Points = 0;
 
     private TextView textViewPoints;
     private TextView textTurn;
+    private Boolean isSinglePlayer;
 
     private SoundPool soundPool;
     private int sound_click, sound_win, sound_finished;
@@ -57,6 +62,9 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
+        //check single player or 2 player
+        isSinglePlayer = getIntent().getExtras().getBoolean("singlePlayer");
 
         //show how to play only once
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
@@ -137,6 +145,9 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
         }
 
+        for(int i=0;i<9;i++)
+            nextTurnChoices.add(i);
+
         textTurn = findViewById(R.id.txt_turn);
 
         Button buttonReset = findViewById(R.id.button_reset);
@@ -168,9 +179,24 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
         }
 
-        System.err.println("setTExt: "+((Button)v).getText());
+        //take first turn
+        String id_no = v.getResources().getResourceEntryName(v.getId()).split("_")[1];
+        int id_row = id_no.charAt(0) - 48;
+        int id_col = id_no.charAt(1) - 48;
+        int used_cell = id_row*3 + id_col;
 
+        System.err.println("setTExt: "+((Button)v).getText()+ " used cell: "+used_cell);
+
+        //remove used cell from the choices list
+        nextTurnChoices.remove(new Integer(used_cell));
+        for(int i=0;i<nextTurnChoices.size();i++)
+        {
+            System.err.print(nextTurnChoices.get(i)+" ");
+        }
+        System.err.println();
         roundCount++;
+        //remove item from nextTurnChoices
+        //nextTurnChoices.remove();
 
         if (checkForWin()) {
             if (player1Turn) {
@@ -187,6 +213,25 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             playDrawSound();
         } else {
             player1Turn = !player1Turn;
+
+            if(isSinglePlayer && !player1Turn) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Random random = new Random();
+                int index = random.nextInt(nextTurnChoices.size());
+                int random_box = nextTurnChoices.get(index);
+
+                int random_row = random_box / 3, random_column = random_box % 3;
+                String random_id = "btn_" + random_row + "" + random_column;
+
+                int resID = getResources().getIdentifier(random_id, "id", getPackageName());
+                Button random_btn = findViewById(resID);
+                random_btn.performClick();
+            }
+
         }
     }
 
@@ -377,6 +422,12 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                 buttons[i][j].setBackground(getResources().getDrawable(R.drawable.gridbtn_empty));
             }
         }
+
+        nextTurnChoices.clear();
+        for(int i=0;i<9;i++) {
+            nextTurnChoices.add(i);
+        }
+
     }
 
     private void resetGame() {

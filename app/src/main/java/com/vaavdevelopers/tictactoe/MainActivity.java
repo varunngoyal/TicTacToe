@@ -1,4 +1,4 @@
-package com.example.tictactoe;
+package com.vaavdevelopers.tictactoe;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 
-import android.widget.Switch;
 import android.widget.Toast;
 
 
@@ -29,14 +28,23 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.Se
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        // play button
         findViewById(R.id.btn_play).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, GameActivity.class));
+                startActivity(new Intent(MainActivity.this, PlayerModeActivity.class));
             }
         });
 
+        // play online
+        findViewById(R.id.btn_play_online).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, RoomActivity.class));
+            }
+        });
+
+        //how to play button
         findViewById(R.id.btn_help).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -44,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.Se
             }
         });
 
+        //about button
         findViewById(R.id.btn_about).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.Se
             }
         });
 
+        //Exit button
         findViewById(R.id.btn_exit).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -84,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.Se
             }
         });
 
+        //settings button
         findViewById(R.id.btn_settings).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
