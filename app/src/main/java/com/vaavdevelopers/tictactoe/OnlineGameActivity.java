@@ -30,7 +30,7 @@ public class OnlineGameActivity extends AppCompatActivity implements View.OnClic
     Boolean host = false;
 
     FirebaseDatabase database;
-    DatabaseReference messageRef;
+    DatabaseReference messageRef, player2Ref, player1Ref, gameRef;
 
     TictactoeGame game;
     GameAudio audio;
@@ -89,13 +89,26 @@ public class OnlineGameActivity extends AppCompatActivity implements View.OnClic
         // listen for incoming messages
         database = FirebaseDatabase.getInstance();
         messageRef = database.getReference("rooms/" + roomName + "/message" );
+        player2Ref = database.getReference("rooms/"+roomName + "/player2");
+        gameRef = database.getReference("rooms/"+roomName );
+
+        if(host) {
+            player2Ref.setValue("");
+            addPlayer2EventListener();
+            messageRef.setValue("");
+
+        } else {
+            //player1Ref = database.getReference("rooms/"+roomName+"/player1");
+            Toast.makeText(this, "Welcome to the online mode! Player1 has already joined the game!", Toast.LENGTH_SHORT).show();
+        }
 
         //dummy O's turn before beginning the game so that X can start the game i.e. host
-        message = "O:";
-        messageRef.setValue(message);
+        //message = "O:";
+
         game.setBoardNotPlayable();
 
-        addRoomEventListener();
+        addRoomEventListener(); 
+        //addGameCloseListener();
     }
 
     private void addRoomEventListener() {
@@ -118,6 +131,32 @@ public class OnlineGameActivity extends AppCompatActivity implements View.OnClic
         });
     }
 
+    private void addPlayer2EventListener() {
+        player2Ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //player 2 joins room
+                String player2_name = dataSnapshot.getValue(String.class);
+
+                if(!player2_name.equals("")) {
+                    Toast.makeText(OnlineGameActivity.this, ""+player2_name+" has joined the room!", Toast.LENGTH_SHORT).show();
+                    message = "O:";
+                    messageRef.setValue(message);
+
+                } else {
+                    Toast.makeText(OnlineGameActivity.this, "Welcome to online mode! Waiting for player 2 to join..", Toast.LENGTH_SHORT).show();
+                    game.resetBoard();
+                    game.setBoardNotPlayable();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
 
 
     @Override
@@ -215,16 +254,28 @@ public class OnlineGameActivity extends AppCompatActivity implements View.OnClic
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         audio.releaseMusic();
         audio.releaseSound();
         audio.onDestroy();
         game.onDestroy();
+        super.onDestroy();
         finish();
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(isFinishing()) {
+            if(!host) {
+                // give notification to p1 and make player2 string empty
+                player2Ref.setValue("");
+                Toast.makeText(this, "You left the room!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

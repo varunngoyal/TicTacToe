@@ -11,17 +11,21 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 
+import java.lang.ref.WeakReference;
+
 public class TictactoeGame {
 
     Button[][] board;
     int roundCount;
     private Context context;
+    //private WeakReference<Context> weakContextRef;
     boolean X_turn;
     int player1Points, player2Points;
 
     public TictactoeGame(Context context) {
         board = new Button[3][3];
         this.context = context;
+        //weakContextRef = new WeakReference<>(context);
         roundCount = 0;
         X_turn = true;
         player1Points = player2Points = 0;
