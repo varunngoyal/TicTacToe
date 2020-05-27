@@ -37,7 +37,7 @@ public class XOBoard {
         int i, j;
         String first;
 
-        System.err.println(temp_diagonal);
+        //System.err.println(temp_diagonal);
 
         //checking for match
         for(i=0;i <= temp_diagonal.size() - winning_match;i++)
@@ -53,12 +53,11 @@ public class XOBoard {
                     break;
             }
             if(j>=i+winning_match) {
-                System.err.println(first);
+                //System.err.println(first);
                 return first;
             }
 
         }
-        System.err.println("empty");
         return "";
     }
 
@@ -120,9 +119,11 @@ public class XOBoard {
 
         }
 
+        temp_diagonal.clear();
+
         if(flag.equals("X")) { player1Points++; return RESULT_X_WIN;}
         else if (flag.equals("O")) {player2Points++; return RESULT_O_WIN; }
-        else if(roundCount == 9) return RESULT_DRAW;
+        else if(roundCount == n*n) return RESULT_DRAW;
         else return RESULT_NONE;
     }
 

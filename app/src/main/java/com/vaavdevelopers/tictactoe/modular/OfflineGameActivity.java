@@ -29,6 +29,9 @@ import android.widget.Toast;
 import com.vaavdevelopers.tictactoe.GameActivity;
 import com.vaavdevelopers.tictactoe.R;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 public class OfflineGameActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String PREFS_NAME = "TicTacToeShared";
@@ -44,6 +47,8 @@ public class OfflineGameActivity extends AppCompatActivity implements View.OnCli
     MediaPlayer player;
     private Dialog howtoplay_dialog;
     private boolean isSoundEnabled, isMusicEnabled;
+    boolean isSinglePlayer;
+    ArrayList<Integer> nextTurnChoices = new ArrayList<>();
 
 
     @Override
@@ -54,6 +59,9 @@ public class OfflineGameActivity extends AppCompatActivity implements View.OnCli
         linearLayout = findViewById(R.id.LL);
         textViewPoints = findViewById(R.id.text_view_points);
         textTurn = findViewById(R.id.txt_turn);
+
+        isSinglePlayer = getIntent().getExtras().getBoolean("singlePlayer");
+
 
         //show how to play only once
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
@@ -109,6 +117,9 @@ public class OfflineGameActivity extends AppCompatActivity implements View.OnCli
         if(isMusicEnabled) {
             player.start();
         }
+
+        for(int i=0;i<n*n;i++)
+            nextTurnChoices.add(i);
 
         board = new XOBoard(n, matchToWin);
         initGameBoard();
@@ -178,6 +189,7 @@ public class OfflineGameActivity extends AppCompatActivity implements View.OnCli
         if(isSoundEnabled)
             soundPool.play(sound_click, 1, 1, 0, 0, 1);
 
+
         if (player1Turn) {
             ((Button) v).setText("X");
             v.setBackground(getResources().getDrawable(R.drawable.gridbtn_p1));
@@ -189,10 +201,25 @@ public class OfflineGameActivity extends AppCompatActivity implements View.OnCli
         }
         int button_no = extractButtonNoFromTag((Button)v);
         board.playMove(button_no, player1Turn);
+        //single player code
+        nextTurnChoices.remove(new Integer(button_no));
+        System.err.println("next turn choices:"+nextTurnChoices);
 
         int result = board.gameResult();
         System.err.println(result);
         gameResultListener(result);
+
+        if(result == XOBoard.RESULT_NONE) {
+
+            if(isSinglePlayer && !player1Turn) {
+
+                Random random = new Random();
+                int index = random.nextInt(nextTurnChoices.size());
+                int random_box = nextTurnChoices.get(index);
+
+                buttons[random_box/n][random_box%n].performClick();
+            }
+        }
 
     }
 
@@ -257,6 +284,10 @@ public class OfflineGameActivity extends AppCompatActivity implements View.OnCli
             }
         }
         player1Turn = true;
+
+        nextTurnChoices.clear();
+        for(int i=0;i<n*n;i++)
+            nextTurnChoices.add(i);
     }
 
     private void resetGame() {
