@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import com.vaavdevelopers.tictactoe.modular.OfflineGameActivity;
+
 public class PlayerModeActivity extends AppCompatActivity {
 
     private Intent intent;
@@ -15,8 +17,8 @@ public class PlayerModeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player_mode);
 
-        intent = new Intent(PlayerModeActivity.this, GameActivity.class);
-
+        //intent = new Intent(PlayerModeActivity.this, GameActivity.class);
+        intent = new Intent(PlayerModeActivity.this, OfflineGameActivity.class);
 
         findViewById(R.id.btn_single_player).setOnClickListener(new View.OnClickListener() {
             @Override

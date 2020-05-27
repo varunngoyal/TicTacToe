@@ -124,7 +124,6 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getSize(point);
 
-
         textViewPoints = findViewById(R.id.text_view_points);
 
         gameGrid = findViewById(R.id.grid);
