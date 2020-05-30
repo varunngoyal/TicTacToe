@@ -50,7 +50,6 @@ public class OfflineGameActivity extends AppCompatActivity implements View.OnCli
     boolean isSinglePlayer;
     ArrayList<Integer> nextTurnChoices = new ArrayList<>();
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
