@@ -8,6 +8,12 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -43,6 +49,12 @@ public class OnlineActivity extends AppCompatActivity implements View.OnClickLis
     DatabaseReference messageRef, player2Ref, player1Ref, gameRef;
     boolean copyRoundStateFlag = false;
 
+    //audio variables
+    SoundPool soundPool;
+    int sound_win, sound_click, sound_finished;
+    MediaPlayer player;
+    private boolean isSoundEnabled, isMusicEnabled;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +73,57 @@ public class OnlineActivity extends AppCompatActivity implements View.OnClickLis
             }
         });
 
+        //******************************audio code **************************************************
         SharedPreferences preferences = getSharedPreferences(PREFS_NAME, 0);
+        //check if sound and music are enabled
+        isMusicEnabled = preferences.getBoolean("music", true);
+        isSoundEnabled = preferences.getBoolean("sound", true);
+
+
+        //get sounds
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_GAME)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build();
+
+            soundPool = new SoundPool.Builder()
+                    .setAudioAttributes(audioAttributes)
+                    .build();
+
+        } else {
+            soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+        }
+        sound_win = soundPool.load(this, R.raw.success,1);
+
+        sound_click = soundPool.load(this, R.raw.softhit2, 1);
+
+        sound_finished = soundPool.load(this, R.raw.finished, 1);
+
+        //play music
+        if(player == null) {
+            player = new MediaPlayer();
+            try { player.setDataSource(this, Uri.parse("android.resource://" + this.getPackageName() + "/raw/music_loop")); }
+            catch (Exception e) {}
+            try { player.prepare(); } catch (Exception e) {}
+            //player.start();
+            //player = MediaPlayer.create(this, R.raw.music_loop);
+            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    if(isMusicEnabled)
+                        player.start();
+                }
+            });
+        }
+
+        if(isMusicEnabled) {
+            player.start();
+        }
+
+        //*******************************************************************************************
+
         playerName = preferences.getString("playerName", "");
 
         roomName = getIntent().getStringExtra("roomName");
@@ -194,8 +256,6 @@ public class OnlineActivity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
-
-
     private void initGameBoard() {
         TableLayout mTableLayout = new TableLayout(this);
 
@@ -251,6 +311,9 @@ public class OnlineActivity extends AppCompatActivity implements View.OnClickLis
         if(!((Button)v).getText().equals("")) {
             return ;
         }
+
+        if(isSoundEnabled)
+            soundPool.play(sound_click, 1, 1, 0, 0, 1);
 
         if(!copyRoundStateFlag)
             setBoardPlayable(false);
@@ -321,6 +384,16 @@ public class OnlineActivity extends AppCompatActivity implements View.OnClickLis
     private void showWinAlert(String winStr) {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
+        if(winStr.equals("Draw!")) {
+            if(isSoundEnabled)
+                soundPool.play(sound_finished, 1, 1, 0, 0, 1);
+            //play draw sound
+        } else {
+            if(isSoundEnabled)
+                soundPool.play(sound_win, 1, 1, 0, 0, 1);
+            //play win sound
+        }
+
         //title of game conclusion
         TextView Xwins = new TextView(this);
         Xwins.setPadding(0, 40, 0, 0);
@@ -371,6 +444,26 @@ public class OnlineActivity extends AppCompatActivity implements View.OnClickLis
         for(int i=0;i<n;i++)
             for(int j=0;j<n;j++)
                 buttons[i][j].setEnabled(toggle);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        soundPool.release();
+        soundPool = null;
+        if(player != null) {
+            player.release();
+            player = null;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(player != null) {
+            player.release();
+            player = null;
+        }
     }
 
 }
