@@ -23,12 +23,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.vaavdevelopers.tictactoe.modular.OnlineActivity;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class RoomActivity extends AppCompatActivity {
     private static final int MY_REQUEST_CODE = 0;
+    public static final String PREFS_NAME = "TicTacToeShared";
     Button button, createRoom, joinRoom;
 
     String playerName = "";
@@ -103,7 +105,7 @@ public class RoomActivity extends AppCompatActivity {
                     roomRefP2.setValue(playerName);
 
                     //enter room
-                    Intent intent = new Intent(RoomActivity.this, OnlineGameActivity.class);
+                    Intent intent = new Intent(RoomActivity.this, OnlineActivity.class);
                     intent.putExtra("host", false);
                     intent.putExtra("roomName", roomName);
                     startActivity(intent);
@@ -141,7 +143,7 @@ public class RoomActivity extends AppCompatActivity {
                     roomRefP1.setValue(playerName);
 
                     //enter room
-                    Intent intent = new Intent(RoomActivity.this, OnlineGameActivity.class);
+                    Intent intent = new Intent(RoomActivity.this, OnlineActivity.class);
                     intent.putExtra("host", true);
                     intent.putExtra("roomName", roomName);
                     startActivity(intent);
@@ -158,6 +160,32 @@ public class RoomActivity extends AppCompatActivity {
         final AlertDialog alertDialog = alert.create();
         alertDialog.setCanceledOnTouchOutside(false);
         alertDialog.show();
+
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                boolean wantToCloseDialog = false;
+                String roomName = edit_room_name.getText().toString();
+
+                if(!roomName.equals("")) {
+                    //create room
+                    roomRefP1 = database.getReference("rooms/"+roomName+"/player1");
+                    roomRefP1.setValue(playerName);
+
+                    //enter room
+                    Intent intent = new Intent(RoomActivity.this, OnlineActivity.class);
+                    intent.putExtra("host", true);
+                    intent.putExtra("roomName", roomName);
+                    startActivity(intent);
+                } else {
+                    edit_room_name.setError("Room name cannot be empty");
+                }
+
+                if(wantToCloseDialog)
+                    alertDialog.dismiss();
+            }
+        });
 
     }
 
@@ -212,7 +240,7 @@ public class RoomActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //success =  continue to the next screen after saving the player's name
                 if(!playerName.equals("")) {
-                    SharedPreferences preferences = getSharedPreferences("PREFS", 0);
+                    SharedPreferences preferences = getSharedPreferences(PREFS_NAME, 0);
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putString("playerName", playerName);
                     editor.apply();
